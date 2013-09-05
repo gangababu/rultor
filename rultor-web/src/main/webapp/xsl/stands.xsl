@@ -64,8 +64,8 @@
             </xsl:when>
             <xsl:otherwise>
                 <p>
-                    <xsl:text>Now create your first management stand and configure it as </xsl:text>
-                    <a href="http://blog.rultor.com">
+                    <xsl:text>Now create your first stand and configure it as </xsl:text>
+                    <a href="//doc.rultor.com/start.html">
                         <xsl:text>this article</xsl:text>
                     </a>
                     <xsl:text> explains.</xsl:text>
@@ -84,7 +84,7 @@
                         <xsl:value-of select="name"/>
                     </a>
                 </li>
-                <li>
+                <li class="icon">
                     <a title="view pulses of the stand">
                         <xsl:attribute name="href">
                             <xsl:value-of select="links/link[@rel='see']/@href"/>

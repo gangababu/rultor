@@ -34,6 +34,7 @@ import com.rultor.spi.Work;
 import com.rultor.tools.Time;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -66,13 +67,14 @@ public final class TemporaryTest {
     public void savesAndReturnsData() throws Exception {
         final Time time = new Time();
         final URN owner = new URN("urn:facebook:8789");
-        final String unit = "some-test-unit";
+        final String rule = "some-test-rule";
         final String line = "some \t\u20ac\tfdsfs9980 Hello878";
-        final Work work = new Work.Simple(owner, unit, time);
+        final Work work = new Work.Simple(owner, rule, time);
         new Temporary(work).append(Arrays.asList(line));
         MatcherAssert.assertThat(
             IOUtils.toString(
-                new Temporary(new Work.Simple(owner, unit, time)).read()
+                new Temporary(new Work.Simple(owner, rule, time)).read(),
+                CharEncoding.UTF_8
             ),
             Matchers.containsString(line)
         );

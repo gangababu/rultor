@@ -85,6 +85,26 @@ public class BaseRs extends BaseResource {
     private static final AuthKeys KEYS = new AuthKeys();
 
     /**
+     * Test authentication provider.
+     */
+    private static final Provider TEST_PROVIDER = new Provider() {
+        @Override
+        public Identity identity() throws IOException {
+            final Identity identity;
+            if ("12345".equals(Manifests.read("Rultor-Revision"))) {
+                identity = new Identity.Simple(
+                    URN.create("urn:facebook:1"),
+                    "Local Host",
+                    URI.create("http://img.rultor.com/none.png")
+                );
+            } else {
+                identity = Identity.ANONYMOUS;
+            }
+            return identity;
+        }
+    };
+
+    /**
      * Flash.
      * @return The inset with flash
      */
@@ -187,18 +207,18 @@ public class BaseRs extends BaseResource {
                     );
                     page.link(
                         new Link(
-                            "units",
+                            "rules",
                             BaseRs.this.uriInfo().getBaseUriBuilder()
                                 .clone()
-                                .path(UnitsRs.class)
+                                .path(RulesRs.class)
                                 .build()
                         )
                     );
                     page.append(
                         new Menu()
                             .with("home", "Home")
-                            .with("units", "Units of Work")
-                            .with("stands", "Web Stands")
+                            .with("rules", "Rules")
+                            .with("stands", "Stands")
                             .with("account", "Account Statistics")
                             .with("auth-logout", "Log out")
                             .bundle()
@@ -241,25 +261,8 @@ public class BaseRs extends BaseResource {
             .with(new Facebook(this, Manifests.read("Rultor-FbId"), Manifests.read("Rultor-FbSecret")))
             .with(new Github(this, Manifests.read("Rultor-GithubId"), Manifests.read("Rultor-GithubSecret")))
             .with(new Google(this, Manifests.read("Rultor-GoogleId"), Manifests.read("Rultor-GoogleSecret")))
-            .with(
-                new Provider() {
-                    @Override
-                    public Identity identity() throws IOException {
-                        Identity identity;
-                        if ("12345".equals(Manifests.read("Rultor-Revision"))) {
-                            identity = new Identity.Simple(
-                                URN.create("urn:facebook:1"),
-                                "Local Host",
-                                URI.create("http://img.rultor.com/none.png")
-                            );
-                        } else {
-                            identity = Identity.ANONYMOUS;
-                        }
-                        return identity;
-                    }
-                }
-            )
-            .with(new HttpBasic(this, BaseRs.KEYS));
+            .with(new HttpBasic(this, BaseRs.KEYS))
+            .with(BaseRs.TEST_PROVIDER);
     }
 
     /**
@@ -303,11 +306,11 @@ public class BaseRs extends BaseResource {
 
     /**
      * The work we're in (while rendering).
-     * @param unit Unit being rendered
+     * @param rule Unit being rendered
      * @param spec Its spec
      * @return The work
      */
-    protected final Work work(final String unit, final Spec spec) {
+    protected final Work work(final String rule, final Spec spec) {
         // @checkstyle AnonInnerLength (50 lines)
         return new Work() {
             @Override
@@ -319,8 +322,8 @@ public class BaseRs extends BaseResource {
                 return BaseRs.this.user().urn();
             }
             @Override
-            public String unit() {
-                return unit;
+            public String rule() {
+                return rule;
             }
             @Override
             public URI stdout() {

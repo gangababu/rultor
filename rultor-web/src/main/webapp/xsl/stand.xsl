@@ -36,29 +36,10 @@
         <title>
             <xsl:value-of select="/page/stand"/>
         </title>
-        <script type="text/javascript"><![CDATA[
-            function fetch($div) {
-                var entry = $div.attr('data-fetch-url');
-                if (!entry) {
-                    console.log('fetch URL is absent!');
-                    return;
-                }
-                $div.find('.heart').show();
-                $div.find('.body').load(
-                    entry,
-                    function(text, status, xhr) {
-                        $div.find('.heart').hide();
-                        console.log(status + ': loaded ' + text.length + ' bytes');
-                    }
-                );
-                setTimeout(function() { fetch($div); }, 5000);
-            }
-            $(document).ready(
-                function() {
-                    $('div:has(.body)').each(function () { fetch($(this)); });
-                }
-            );
-        ]]></script>
+        <script type="text/javascript" src="/js/stand.js">
+            <!-- this is for W3C compliance -->
+            <xsl:text> </xsl:text>
+        </script>
     </xsl:template>
     <xsl:template name="content">
         <h2>
@@ -84,7 +65,7 @@
                         </ul>
                     </div>
                 </xsl:if>
-                <xsl:apply-templates select="/page/pulses/pulse[snapshot]" mode="open"/>
+                <xsl:apply-templates select="/page/pulses/pulse[snapshot or error]" mode="open"/>
                 <xsl:apply-templates select="/page/pulses/pulse[not(snapshot)]" mode="closed"/>
                 <xsl:if test="//links/link[@rel='more']">
                     <div class="spacious">
@@ -107,40 +88,52 @@
         </xsl:choose>
     </xsl:template>
     <xsl:template match="pulse" mode="open">
-        <div class="panel spacious" style="min-height: 4em;">
+        <div class="panel panel-default">
             <xsl:attribute name="data-fetch-url">
                 <xsl:value-of select="links/link[@rel='fetch']/@href"/>
             </xsl:attribute>
-            <ul class="list-inline" style="float:right">
-                <li class="heart text-muted" style="display:none">
-                    <i class="icon-cloud-download"><xsl:comment>heart</xsl:comment></i>
-                </li>
-                <li>
-                    <xsl:value-of select="identifier"/>
-                </li>
-                <li>
-                    <a title="close">
-                        <xsl:attribute name="href">
-                            <xsl:value-of select="links/link[@rel='close']/@href"/>
-                        </xsl:attribute>
-                        <i class="icon-remove"><xsl:comment>close</xsl:comment></i>
-                    </a>
-                </li>
-            </ul>
-            <div class="body">
+            <div class="panel-heading">
+                <ul class="list-inline">
+                    <li>
+                        <xsl:value-of select="identifier"/>
+                    </li>
+                    <li class="heart text-muted icon" title="click to stop fetching">
+                        <i class="icon-cloud-download"><xsl:comment>heart</xsl:comment></i>
+                    </li>
+                    <li class="pull-right icon">
+                        <a title="close and stop fetching" class="close">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="links/link[@rel='close']/@href"/>
+                            </xsl:attribute>
+                            <xsl:text>&#215;</xsl:text>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="panel-body snapshot">
+                <xsl:if test="error">
+                    <pre class="text-danger"><xsl:value-of select="error"/></pre>
+                </xsl:if>
                 <xsl:apply-templates select="snapshot"/>
             </div>
         </div>
     </xsl:template>
     <xsl:template match="pulse" mode="closed">
-        <div class="panel spacious">
-            <a title="open" style="float: right">
-                <xsl:attribute name="href">
-                    <xsl:value-of select="links/link[@rel='open']/@href"/>
-                </xsl:attribute>
-                <i class="icon-zoom-in"><xsl:comment>open</xsl:comment></i>
-            </a>
-            <xsl:value-of select="identifier"/>
+        <div class="panel panel-default spacious">
+            <div class="panel-body">
+                <a class="pull-right icon" title="open for full view">
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="links/link[@rel='open']/@href"/>
+                    </xsl:attribute>
+                    <i class="icon-zoom-in"><xsl:comment>open</xsl:comment></i>
+                </a>
+                <ul class="list-inline">
+                    <li>
+                        <xsl:value-of select="identifier"/>
+                    </li>
+                    <xsl:apply-templates select="tags/tag"/>
+                </ul>
+            </div>
         </div>
     </xsl:template>
 </xsl:stylesheet>

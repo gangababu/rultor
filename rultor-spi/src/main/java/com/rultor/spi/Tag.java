@@ -27,88 +27,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.rultor.conveyer.audit;
+package com.rultor.spi;
 
 import com.jcabi.aspects.Immutable;
-import com.jcabi.aspects.Loggable;
-import com.jcabi.urn.URN;
-import com.rultor.spi.Spec;
-import com.rultor.spi.Unit;
-import com.rultor.spi.Wallet;
-import com.rultor.spi.Work;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import java.util.logging.Level;
+import javax.validation.constraints.NotNull;
 
 /**
- * Unit with audit features.
+ * Tag of a {@link Pulse}.
  *
  * @author Yegor Bugayenko (yegor@tpc2.com)
  * @version $Id$
  * @since 1.0
  */
 @Immutable
-@ToString
-@EqualsAndHashCode(of = { "origin", "funded" })
-@Loggable(Loggable.DEBUG)
-final class AuditUnit implements Unit {
+public interface Tag {
 
     /**
-     * Original unit.
+     * Label of it.
+     * @return Label
      */
-    private final transient Unit origin;
+    @NotNull(message = "label is never NULL")
+    String label();
 
     /**
-     * Wallet is available, account is properly funded.
+     * Level.
+     * @return Level
      */
-    private final transient boolean funded;
-
-    /**
-     * Public ctor.
-     * @param unit Unit
-     * @param fnd Funded
-     */
-    protected AuditUnit(final Unit unit, final boolean fnd) {
-        this.origin = unit;
-        this.funded = fnd;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String name() {
-        return this.origin.name();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void update(final Spec spec) {
-        this.origin.update(spec);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Spec spec() {
-        return this.origin.spec();
-    }
-
-    /**
-     * {@inheritDoc}
-     * @checkstyle RedundantThrows (5 lines)
-     */
-    @Override
-    public Wallet wallet(final Work work, final URN taker, final String unit)
-        throws Wallet.NotEnoughFundsException {
-        if (!this.funded) {
-            throw new Wallet.NotEnoughFundsException(
-                "not enough funds in the account"
-            );
-        }
-        return this.origin.wallet(work, taker, unit);
-    }
+    @NotNull(message = "level is never NULL")
+    Level level();
 
 }

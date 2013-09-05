@@ -61,15 +61,20 @@ public final class IncrementalBashTest {
         final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         final File dir = Files.createTempDir();
         FileUtils.write(new File(dir, "a.txt"), "first\nsecond");
+        final ImmutableMap<String, Object> args =
+            new ImmutableMap.Builder<String, Object>()
+                .put("file", "file-name.txt")
+                .build();
         final int code = new IncrementalBash(
             new Permanent(new ShellMocker.Bash(dir)),
             Arrays.asList(
-                "MSG='$A'; echo `date` $A; sleep 1;",
-                "find . -name \"a.txt\" | grep txt | wc -l; mkdir alpha",
-                "cd alpha && if [ -f a.txt ]; then echo 'exists!'; fi",
-                "/usr/bin/broken-name"
+                "MSG='$A'; echo `date` $A; sleep 1; pwd;",
+                "find . -name \"a.txt\" | grep txt | wc -l;",
+                "mkdir -p foo; cd foo; touch ${file}; pwd",
+                "pwd; if [ ! -f ${file.toString()} ]; then exit 1; fi",
+                "/usr/bin/--broken-name; /usr/bin/--again"
             )
-        ).exec(new ImmutableMap.Builder<String, Object>().build(), stdout);
+        ).exec(args, stdout);
         MatcherAssert.assertThat(code, Matchers.not(Matchers.equalTo(0)));
         MatcherAssert.assertThat(
             XhtmlMatchers.xhtml(
@@ -80,13 +85,13 @@ public final class IncrementalBashTest {
             XhtmlMatchers.hasXPaths(
                 "/snapshot/steps/step",
                 // @checkstyle LineLength (5 lines)
-                "//step[summary=\"`MSG='$A'; echo \\`date\\` $A; sleep 1;`\"]/start",
-                "//step[summary='`/usr/bin/broken-name`']/exception",
-                "//step/exception[stacktrace='bash: /usr/bin/broken-name: No such file or directory']",
-                "//steps[count(step[level='INFO']) = 3]",
+                "//step[summary=\"MSG='$A'; echo `date` $A; sleep 1; pwd;\"]/start",
+                "//step[summary='/usr/bin/--broken-name; /usr/bin/--again']/exception",
+                "//step/exception[contains(stacktrace,'/usr/bin/--broken-name: No such file or directory')]",
+                "//steps[count(step[level='INFO']) = 4]",
                 "//steps[count(step[level='SEVERE']) = 1]",
-                "//steps[count(step[start]) = 4]",
-                "//steps[count(step[finish]) = 4]",
+                "//steps[count(step[start]) = 5]",
+                "//steps[count(step[finish]) = 5]",
                 "//steps[count(step[duration = '']) = 0]"
             )
         );

@@ -41,7 +41,7 @@
                 <meta name="description" content="Programmable Enforcer of a Software Development Process"/>
                 <meta name="keywords" content="continuous integration, continuous delivery, software development process, revision control"/>
                 <meta name="author" content="rultor.com"/>
-                <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css" rel="stylesheet" />
+                <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" />
                 <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet" />
                 <link rel="stylesheet" type="text/css" media="all">
                     <xsl:attribute name="href">
@@ -67,33 +67,10 @@
                     <!-- this is for W3C compliance -->
                     <xsl:text> </xsl:text>
                 </script>
-                <script type="text/javascript"><![CDATA[
-                    $(document).ready(
-                        function() {
-                            $('span.timeago').each(
-                                function (span) {
-                                    var iso = $(this).text();
-                                    $(this).text(moment(iso).fromNow());
-                                    $(this).attr('title', iso);
-                                }
-                            );
-                            $('span.markdown').each(
-                                function (span) {
-                                    $(this).html(markdown.toHTML($(this).text()).replace(/<\/?p *>/g,''));
-                                }
-                            );
-
-                        }
-                    );
-                    $(document).keyup(
-                        function(event) {
-                            if (event.keyCode == 27) {
-                                $('.overlay').hide();
-                                $('.menu').hide();
-                            }
-                        }
-                    );
-                ]]></script>
+                <script type="text/javascript" src="/js/layout.js">
+                    <!-- this is for W3C compliance -->
+                    <xsl:text> </xsl:text>
+                </script>
                 <script type="text/javascript"><![CDATA[
                     var _gaq = _gaq || [];
                     _gaq.push(['_setAccount', 'UA-1963507-10']);
@@ -118,7 +95,7 @@
             </head>
             <body>
                 <xsl:if test="/page/nav/item">
-                    <div class="overlay" onclick="$('.overlay').hide();$('.menu').hide();">
+                    <div class="overlay" onclick="$('.menu').hide();">
                         <!-- this is for W3C compliance -->
                         <xsl:text> </xsl:text>
                     </div>
@@ -134,7 +111,7 @@
                     <li class="logo">
                         <xsl:if test="/page/nav/item">
                             <xsl:attribute name="onclick">
-                                <xsl:text>$('.overlay').show();$('.menu').toggle();</xsl:text>
+                                <xsl:text>$('.menu').toggle();</xsl:text>
                             </xsl:attribute>
                         </xsl:if>
                         <xsl:choose>
@@ -146,13 +123,11 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </li>
-                    <xsl:if test="not(contains(/page/version/name, 'SNAPSHOT'))">
-                        <li class="hidden-phone">
-                            <a href="//blog.rultor.com/">
-                                <xsl:text>how it works?</xsl:text>
-                            </a>
-                        </li>
-                    </xsl:if>
+                    <li class="hidden-phone">
+                        <a href="//doc.rultor.com/">
+                            <xsl:text>how it works?</xsl:text>
+                        </a>
+                    </li>
                     <xsl:apply-templates select="breadcrumbs/crumb"/>
                     <xsl:apply-templates select="identity"/>
                 </ul>
@@ -197,22 +172,24 @@
     </xsl:template>
     <xsl:template match="item">
         <xsl:variable name="rel" select="@rel"/>
-        <li>
-            <xsl:if test="/page/links/link[@rel=$rel]/@href = /page/links/link[@rel='self']/@href">
-                <xsl:attribute name="class">
-                    <xsl:text>active</xsl:text>
-                </xsl:attribute>
-            </xsl:if>
-            <a>
-                <xsl:attribute name="href">
-                    <xsl:value-of select="/page/links/link[@rel=$rel]/@href"/>
-                </xsl:attribute>
-                <xsl:value-of select="."/>
-            </a>
-        </li>
+        <xsl:if test="/page/links/link[@rel=$rel]">
+            <li>
+                <xsl:if test="/page/links/link[@rel=$rel]/@href = /page/links/link[@rel='self']/@href">
+                    <xsl:attribute name="class">
+                        <xsl:text>active</xsl:text>
+                    </xsl:attribute>
+                </xsl:if>
+                <a>
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="/page/links/link[@rel=$rel]/@href"/>
+                    </xsl:attribute>
+                    <xsl:value-of select="."/>
+                </a>
+            </li>
+        </xsl:if>
     </xsl:template>
     <xsl:template match="version">
-        <aside class="version hidden-phone">
+        <aside class="version hidden-phone" style="padding: 0.2em 0.5em;">
             <ul class="list-inline">
                 <li>
                     <xsl:attribute name="class">
@@ -264,8 +241,11 @@
                         <xsl:text> alert-info</xsl:text>
                     </xsl:when>
                     <xsl:when test="level = 'ERROR'">
-                        <xsl:text> alert-error</xsl:text>
+                        <xsl:text> alert-danger</xsl:text>
                     </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text> alert-default</xsl:text>
+                    </xsl:otherwise>
                 </xsl:choose>
             </xsl:attribute>
             <xsl:value-of select="message"/>
@@ -325,7 +305,7 @@
                 <xsl:comment>authenticated</xsl:comment>
             </i>
         </li>
-        <li>
+        <li class="icon">
             <a title="log out">
                 <xsl:attribute name="href">
                     <xsl:value-of select="/page/links/link[@rel='auth-logout']/@href"/>

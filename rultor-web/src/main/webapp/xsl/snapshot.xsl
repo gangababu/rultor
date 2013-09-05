@@ -30,8 +30,9 @@
  -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="xs">
     <xsl:template match="snapshot">
+        <xsl:apply-templates select="error"/>
         <xsl:if test="tags/tag">
-            <ul class="list-inline">
+            <ul class="list-inline" style="margin: 5px 0px;">
                 <xsl:apply-templates select="tags/tag"/>
                 <xsl:if test="updated">
                     <li class="text-muted">
@@ -41,10 +42,10 @@
                 </xsl:if>
             </ul>
         </xsl:if>
-        <ul class="list-inline">
+        <ul class="list-inline" style="margin: 5px 0px;">
             <xsl:if test="spec">
-                <li>
-                    <i class="icon-beaker" style="cursor:pointer;" title="show specification"
+                <li class="icon">
+                    <i class="icon-beaker" title="show specification"
                         onclick="$(this).parent().parent().parent().parent().find('pre.spec').toggle();"><xsl:comment>spec</xsl:comment></i>
                 </li>
             </xsl:if>
@@ -97,24 +98,30 @@
         <xsl:choose>
             <xsl:when test="stdout">
                 <div class="progress progress-striped active">
-                    <small>
-                        <a style="margin-right: .5em;" class="pull-right text-danger" title="stop execution immediately">
-                            <xsl:attribute name="href">
-                                <xsl:value-of select="stdout"/>
-                                <xsl:text>?interrupt</xsl:text>
-                            </xsl:attribute>
-                            <i class="icon-off"><xsl:comment>off</xsl:comment></i>
-                        </a>
-                    </small>
-                    <small>
-                        <a style="margin-right: .5em;" class="pull-right" title="server statistics">
-                            <xsl:attribute name="href">
-                                <xsl:value-of select="stdout"/>
-                                <xsl:text>/stats</xsl:text>
-                            </xsl:attribute>
-                            <i class="icon-cloud"><xsl:comment>cloud</xsl:comment></i>
-                        </a>
-                    </small>
+                    <ul class="list-inline pull-right">
+                        <li>
+                            <small class="icon">
+                                <a class="text-danger" title="stop execution immediately">
+                                    <xsl:attribute name="href">
+                                        <xsl:value-of select="stdout"/>
+                                        <xsl:text>?interrupt</xsl:text>
+                                    </xsl:attribute>
+                                    <i class="icon-off"><xsl:comment>off</xsl:comment></i>
+                                </a>
+                            </small>
+                        </li>
+                        <li>
+                            <small class="icon">
+                                <a title="server statistics">
+                                    <xsl:attribute name="href">
+                                        <xsl:value-of select="stdout"/>
+                                        <xsl:text>/stats</xsl:text>
+                                    </xsl:attribute>
+                                    <i class="icon-cloud"><xsl:comment>cloud</xsl:comment></i>
+                                </a>
+                            </small>
+                        </li>
+                    </ul>
                     <a title="click to tail the output">
                         <xsl:attribute name="href">
                             <xsl:value-of select="stdout"/>
@@ -141,6 +148,9 @@
             </ul>
         </xsl:if>
     </xsl:template>
+    <xsl:template match="error">
+        <pre class="text-danger"><xsl:value-of select="."/></pre>
+    </xsl:template>
     <xsl:template match="work">
         <li>
             <i class="icon-male">
@@ -151,11 +161,11 @@
             </i>
         </li>
         <li>
-            <xsl:value-of select="unit"/>
+            <xsl:value-of select="rule"/>
         </li>
     </xsl:template>
     <xsl:template match="version" mode="compact">
-        <li>
+        <li class="icon">
             <a>
                 <xsl:attribute name="href">
                     <xsl:text>https://github.com/rultor/rultor/commit/</xsl:text>
@@ -208,7 +218,7 @@
             </xsl:if>
             <span class="step">
                 <xsl:if test="exception">
-                    <i class="text-danger icon-warning-sign" style="cursor:pointer;"
+                    <i class="text-danger icon-warning-sign icon"
                         onclick="$(this).parent().parent().find('pre.exception').toggle();">
                         <xsl:attribute name="title">
                             <xsl:value-of select="exception/class"/>
@@ -244,8 +254,8 @@
                         </xsl:choose>
                     </xsl:attribute>
                     <xsl:choose>
-                        <xsl:when test="string-length($title) &gt; 70">
-                            <xsl:value-of select="substring($title,1,70)"/>
+                        <xsl:when test="string-length($title) &gt; 150">
+                            <xsl:value-of select="substring($title,1,150)"/>
                             <xsl:text>&#8230;</xsl:text>
                         </xsl:when>
                         <xsl:otherwise>
@@ -263,7 +273,7 @@
             <xsl:if test="not($left)">
                 <i class="icon-chevron-left"><xsl:comment>start</xsl:comment></i>
             </xsl:if>
-            <xsl:if test="exception">
+            <xsl:if test="exception/stacktrace">
                 <pre style="display:none" class="text-danger text-left exception"><xsl:value-of select="exception/stacktrace"/></pre>
             </xsl:if>
         </li>
@@ -286,6 +296,9 @@
                         <xsl:when test="level = 'SEVERE'">
                             <xsl:text>label-danger</xsl:text>
                         </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:text>label-default</xsl:text>
+                        </xsl:otherwise>
                     </xsl:choose>
                 </xsl:attribute>
                 <xsl:value-of select="label"/>

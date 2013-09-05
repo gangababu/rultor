@@ -44,11 +44,13 @@ import com.rultor.spi.Pulse;
 import com.rultor.spi.Repo;
 import com.rultor.spi.SpecException;
 import com.rultor.spi.Stand;
+import com.rultor.spi.Tag;
 import com.rultor.spi.Wallet;
 import com.rultor.spi.Work;
 import com.rultor.tools.Exceptions;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -78,6 +80,7 @@ import org.xembly.XemblySyntaxException;
  * @since 1.0
  * @checkstyle MultipleStringLiterals (500 lines)
  * @checkstyle ClassDataAbstractionCoupling (500 lines)
+ * @checkstyle ClassFanOutComplexity (500 lines)
  */
 @Path("/s/{stand:[\\w\\-]+}")
 @Loggable(Loggable.DEBUG)
@@ -145,11 +148,12 @@ public final class StandRs extends BaseRs {
                         .build(this.name)
                 )
             )
+            .link(new Link("collapse", this.self(new ArrayList<String>(0))))
             .append(
                 new Breadcrumbs()
                     .with("stands")
                     .with("edit", this.name)
-                    .with("self", "stand")
+                    .with("collapse", "stand")
                     .bundle()
             )
             .append(new JaxbBundle("stand", this.name))
@@ -171,25 +175,21 @@ public final class StandRs extends BaseRs {
         try {
             resp = Response.ok().entity(
                 new XSLT(
-                    this.snapshot(
-                        this.stand().pulses().tail(uid)
-                            .iterator().next().xembly()
-                    ),
+                    this.render(
+                        new JaxbBundle("div"),
+                        this.stand().pulses().tail(uid).iterator().next()
+                    ).element(),
                     this.getClass().getResourceAsStream("fetch.xsl")
                 ).xml()
             ).build();
         } catch (TransformerException ex) {
-            resp = Response.serverError()
-                .entity(Exceptions.stacktrace(ex)).build();
-        } catch (XemblySyntaxException ex) {
-            resp = Response.serverError()
-                .entity(Exceptions.stacktrace(ex)).build();
+            resp = Response.serverError().entity(
+                Exceptions.stacktrace(ex)
+            ).build();
         } catch (IOException ex) {
-            resp = Response.serverError()
-                .entity(Exceptions.stacktrace(ex)).build();
-        } catch (ImpossibleModificationException ex) {
-            resp = Response.serverError()
-                .entity(Exceptions.stacktrace(ex)).build();
+            resp = Response.serverError().entity(
+                Exceptions.stacktrace(ex)
+            ).build();
         }
         return resp;
     }
@@ -261,7 +261,20 @@ public final class StandRs extends BaseRs {
                     )
                 );
         } else {
-            bundle = bundle.link(new Link("open", this.self(now.with(uid))));
+            bundle = bundle
+                .link(new Link("open", this.self(now.with(uid))))
+                .add("tags")
+                .add(
+                    new JaxbBundle.Group<Tag>(pulse.tags()) {
+                        @Override
+                        public JaxbBundle bundle(final Tag tag) {
+                            return new JaxbBundle("tag")
+                                .add("label", tag.label()).up()
+                                .add("level", tag.level().toString()).up();
+                        }
+                    }
+                )
+                .up();
         }
         return bundle;
     }
@@ -332,7 +345,6 @@ public final class StandRs extends BaseRs {
             new Directives(xembly)
                 .xpath("/snapshot/spec")
                 .remove()
-                .toString()
         );
     }
 
@@ -343,7 +355,7 @@ public final class StandRs extends BaseRs {
      * @return Bundle
      */
     private JaxbBundle bug(final JaxbBundle bundle, final Exception exc) {
-        return bundle.add("exception", Exceptions.message(exc)).up();
+        return bundle.add("error", Exceptions.message(exc)).up();
     }
 
     /**

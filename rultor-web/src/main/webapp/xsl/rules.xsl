@@ -33,7 +33,7 @@
     <xsl:include href="/xsl/layout.xsl"/>
     <xsl:template name="head">
         <title>
-            <xsl:text>units</xsl:text>
+            <xsl:text>rules</xsl:text>
         </title>
     </xsl:template>
     <xsl:template name="content">
@@ -57,13 +57,13 @@
             </fieldset>
         </form>
         <xsl:choose>
-            <xsl:when test="/page/units/unit">
-                <xsl:apply-templates select="/page/units/unit"/>
+            <xsl:when test="/page/rules/rule">
+                <xsl:apply-templates select="/page/rules/rule"/>
             </xsl:when>
             <xsl:otherwise>
                 <p>
-                    <xsl:text>Now create your first management unit and configure it as </xsl:text>
-                    <a href="http://blog.rultor.com">
+                    <xsl:text>Now create your first rule and configure it as </xsl:text>
+                    <a href="//doc.rultor.com/start.html">
                         <xsl:text>this article</xsl:text>
                     </a>
                     <xsl:text> explains.</xsl:text>
@@ -71,11 +71,11 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="unit">
+    <xsl:template match="rule">
         <div class="spacious">
             <ul class="list-inline">
                 <li>
-                    <a title="edit this unit">
+                    <a title="edit this rule">
                         <xsl:if test="face/exception">
                             <xsl:attribute name="class">
                                 <xsl:text>text-danger</xsl:text>
@@ -100,8 +100,8 @@
                     </a>
                 </li>
                 <xsl:if test="face/drainable = 'true'">
-                    <li>
-                        <a title="view drain of the unit">
+                    <li class="icon">
+                        <a title="view drain of the rule">
                             <xsl:attribute name="href">
                                 <xsl:value-of select="links/link[@rel='drain']/@href"/>
                             </xsl:attribute>
@@ -109,9 +109,9 @@
                         </a>
                     </li>
                 </xsl:if>
-                <li>
+                <li class="icon">
                     <a onclick="return confirm('Are you sure?');"
-                        title="delete this unit">
+                        title="delete this rule">
                         <xsl:attribute name="href">
                             <xsl:value-of select="links/link[@rel='remove']/@href"/>
                         </xsl:attribute>
@@ -119,14 +119,14 @@
                     </a>
                 </li>
                 <xsl:if test="face/exception">
-                    <li>
-                        <i class="icon-warning-sign text-danger" style="cursor:pointer;" title="show exception"
+                    <li class="icon">
+                        <i class="icon-warning-sign text-danger" title="show exception"
                             onclick="$(this).parent().parent().parent().find('.exception').toggle();"><xsl:comment>exception</xsl:comment></i>
                     </li>
                 </xsl:if>
             </ul>
             <xsl:if test="face/exception">
-                <pre style="display:none;" class="exception"><xsl:value-of select="face/exception"/></pre>
+                <pre style="display:none;" class="text-danger exception"><xsl:value-of select="face/exception"/></pre>
             </xsl:if>
         </div>
     </xsl:template>
